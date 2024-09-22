@@ -4,4 +4,4 @@ numpy
 matplotlib
 biopython
 tqdm
-
+onnxruntime 

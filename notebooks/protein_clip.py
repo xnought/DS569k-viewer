@@ -1,5 +1,9 @@
-# All credit to the code I've copied from
+# Code from
 # https://github.com/wukevin/proteinclip/blob/main/proteinclip/esm_wrapper.py
+# and
+# https://github.com/wukevin/proteinclip/blob/main/proteinclip/model_utils.py
+# credit to https://github.com/wukevin
+
 import esm
 import torch.nn as nn
 import torch
@@ -11,6 +15,10 @@ from Bio.SeqUtils import seq1
 from io import StringIO
 from Bio.PDB import PDBParser
 import os
+
+import json
+from pathlib import Path
+from typing import Any, Dict, Literal
 
 ESM_CALLABLES = {
     48: esm.pretrained.esm2_t48_15B_UR50D,
@@ -52,9 +60,6 @@ def embed(sequence, model, alphabet, embed_layer=5):
     return rep
 
 
-VENOME = "/Users/donnybertucci/datasets/venome"
-
-
 def amino_acids(structure, one_letter_code=True):
     return "".join(
         [
@@ -78,3 +83,46 @@ def read_fasta_from_pdbs(path):
         sequences.append(amino_acids(structure))
 
     return list(zip(ids, sequences))
+
+
+MODEL_DIR = Path(__file__).parent.parent / "pretrained"
+
+
+class ONNXModel:
+    """Wrapper for an ONNX model to provide a more familiar interface."""
+
+    def __init__(self, path):
+        import onnxruntime as ort
+
+        self.model = ort.InferenceSession(path, providers=["CPUExecutionProvider"])
+
+    def predict(self, x: np.ndarray, apply_norm: bool = True):
+        """If apply_norm is specified, then apply a norm before feeding into model."""
+        assert x.ndim == 1
+        if apply_norm:
+            x /= np.linalg.norm(x)
+        if x.dtype != np.float32:
+            x = x.astype(np.float32)
+        return self.model.run(None, {"input": x[None, :]})[0].squeeze()
+
+    def predict_batch(self, x: np.ndarray, apply_norm: bool = True):
+        assert x.ndim == 2
+        if apply_norm:
+            x /= np.linalg.norm(x, axis=1)[:, None]
+        if x.dtype != np.float32:
+            x = x.astype(np.float32)
+        return self.model.run(None, {"input": x})[0]
+
+
+def load_proteinclip(model_size: int | None = None) -> ONNXModel:
+    """Load the ProteinCLIP model for the given protein language model."""
+    assert MODEL_DIR.is_dir()
+    assert model_size is not None, "ESM model requires a size."
+    assert model_size in [
+        6,
+        12,
+        30,
+    ], f"Invalid ESM model size: {model_size}"
+
+    model_path = MODEL_DIR / f"proteinclip_esm2_{model_size}.onnx"
+    return ONNXModel(model_path)
