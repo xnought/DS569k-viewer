@@ -1,8 +1,7 @@
-# Code from
+# credit to https://github.com/wukevin. most if not all of this code is copied from the files below
 # https://github.com/wukevin/proteinclip/blob/main/proteinclip/esm_wrapper.py
-# and
 # https://github.com/wukevin/proteinclip/blob/main/proteinclip/model_utils.py
-# credit to https://github.com/wukevin
+# https://github.com/wukevin/proteinclip/blob/main/proteinclip/gpt.py
 
 import esm
 import torch.nn as nn
@@ -15,6 +14,11 @@ from Bio.SeqUtils import seq1
 from io import StringIO
 from Bio.PDB import PDBParser
 import os
+import re
+import functools
+from typing import *
+
+import openai
 
 import json
 from pathlib import Path
@@ -47,12 +51,36 @@ def read_fasta(filename):
     return list(zip(ids, sequences))
 
 
-def embed(sequence, model, alphabet, embed_layer=5):
+def batch_embed_sequence(batch, model, alphabet, embed_layer=5, device="cpu"):
     batch_converter = alphabet.get_batch_converter()
 
-    _, _, tokens = batch_converter([("", sequence)])
+    _, _, tokens = batch_converter(
+        [(i, s.replace("*", "<mask>")) for i, s in enumerate(batch)]
+    )
     with torch.no_grad():
-        results = model(tokens, repr_layers=[embed_layer], return_contacts=False)
+        results = model(
+            tokens.to(device), repr_layers=[embed_layer], return_contacts=False
+        )
+    token_representations = results["representations"][embed_layer]
+
+    # then convert the batch into an array of embeddings
+    reprs = []
+    batch_lens = (tokens != alphabet.padding_idx).sum(1)
+    for i, tokens_len in enumerate(batch_lens):
+        rep = token_representations[i, 1 : tokens_len - 1].cpu().numpy().mean(0)
+        reprs.append(rep)
+
+    return reprs
+
+
+def embed_sequence(sequence, model, alphabet, embed_layer=5, device="cpu"):
+    batch_converter = alphabet.get_batch_converter()
+
+    _, _, tokens = batch_converter([("", sequence.replace("*", "<mask>"))])
+    with torch.no_grad():
+        results = model(
+            tokens.to(device), repr_layers=[embed_layer], return_contacts=False
+        )
     token_representations = results["representations"][embed_layer]
     rep = token_representations[0, 1 : 1 + len(sequence)].cpu().numpy()
     rep = rep.mean(0)
@@ -118,11 +146,15 @@ def load_proteinclip(model_size: int | None = None) -> ONNXModel:
     """Load the ProteinCLIP model for the given protein language model."""
     assert MODEL_DIR.is_dir()
     assert model_size is not None, "ESM model requires a size."
-    assert model_size in [
-        6,
-        12,
-        30,
-    ], f"Invalid ESM model size: {model_size}"
+    assert model_size in [6, 12, 30, 33, 36], f"Invalid ESM model size: {model_size}"
 
     model_path = MODEL_DIR / f"proteinclip_esm2_{model_size}.onnx"
     return ONNXModel(model_path)
+
+
+def embed_text(s: str, key, model="text-embedding-3-large") -> np.ndarray:
+    """Get the embeddings for the given string s."""
+    CLIENT = openai.OpenAI(api_key=key)
+    s = s.strip()  # Remove leading and trailing whitespace
+    embed = CLIENT.embeddings.create(input=[s], model=model).data[0].embedding
+    return np.array(embed)
