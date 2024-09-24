@@ -8,21 +8,11 @@ import torch.nn as nn
 import torch
 import numpy as np
 from Bio import SeqIO
-from tqdm import tqdm
-import matplotlib.pyplot as plt
 from Bio.SeqUtils import seq1
-from io import StringIO
 from Bio.PDB import PDBParser
 import os
-import re
-import functools
-from typing import *
 
-# import openai
-
-import json
 from pathlib import Path
-from typing import Any, Dict, Literal
 
 ESM_CALLABLES = {
     48: esm.pretrained.esm2_t48_15B_UR50D,
@@ -113,7 +103,7 @@ def read_fasta_from_pdbs(path):
     return list(zip(ids, sequences))
 
 
-MODEL_DIR = Path(__file__).parent.parent / "pretrained"
+MODEL_DIR = Path(__file__).parent.parent.parent.parent / "pretrained"
 
 
 class ONNXModel:
@@ -150,11 +140,3 @@ def load_proteinclip(model_size: int | None = None) -> ONNXModel:
 
     model_path = MODEL_DIR / f"proteinclip_esm2_{model_size}.onnx"
     return ONNXModel(model_path)
-
-
-# def embed_text(s: str, key, model="text-embedding-3-large") -> np.ndarray:
-#     """Get the embeddings for the given string s."""
-#     CLIENT = openai.OpenAI(api_key=key)
-#     s = s.strip()  # Remove leading and trailing whitespace
-#     embed = CLIENT.embeddings.create(input=[s], model=model).data[0].embedding
-#     return np.array(embed)
