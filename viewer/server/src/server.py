@@ -9,7 +9,7 @@ from protein_clip import load_proteinclip, get_model, embed_sequence
 def load_569k():
     print("Loading Embeddings Dataset")
     df = pd.read_parquet(
-        os.path.join("..", "..", "data", "swissprot-embeddings-small.parquet")
+        os.path.join("..", "..", "data", "swissprot-embeddings-large.parquet")
     )
     print("Loaded Embeddings Dataset")
     return df

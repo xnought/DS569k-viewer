@@ -8,17 +8,18 @@
 <nav>
 	<div id="inner">
 		<div class="left">
-			<span id="title-desc">ProteinCLIP Search</span>
+			<span id="title-desc" style="color:#D1E600;"
+				>569k Protein Embeddings Search</span
+			>
 		</div>
 		<div class="right">
 			<Button
 				size="xs"
-				href="https://github.com/xnought/hyperprot"
+				href="https://huggingface.co/datasets/donnyb/569k-protein-embeddings"
 				target="_blank"
 				{color}
 				outline
-				>Code
-				<GithubSolid size="md" class="ml-1" />
+				>Huggingface Dataset 🤗
 			</Button>
 			<!--
 			<Button
