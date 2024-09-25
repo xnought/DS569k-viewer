@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type EmbeddingsData = {
+export type ProteinData = {
     accession: Array<string>;
     proteinName: Array<string>;
     organismName: Array<string>;

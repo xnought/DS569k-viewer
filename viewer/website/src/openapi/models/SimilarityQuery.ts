@@ -2,8 +2,10 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type ProteinCLIPQuery = {
+export type SimilarityQuery = {
     sequence: string;
     topK: number;
+    classFilters?: (Array<string> | null);
+    phylumFilters?: (Array<string> | null);
 };
 

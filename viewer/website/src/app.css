@@ -11,6 +11,19 @@
 	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+
+	/* select styles */
+	/* https://github.com/rob-balfre/svelte-select/blob/master/docs/theming_variables.md */
+	--background: #374151;
+	--list-background: var(--background);
+	--item-active-background: var(--background);
+	--item-hover-bg: grey;
+
+	--multi-item-bg: grey;
+	--multi-item-clear-icon-color: white;
+	--border: 1px solid #4b5563;
+	--border-hover: 1px solid #d1e602;
+	--border-focused: var(--border-hover);
 }
 
 body {

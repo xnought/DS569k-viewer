@@ -1,25 +1,60 @@
 <script lang="ts">
 	import "./app.css";
 	import Header from "./components/Header.svelte";
-	import { Backend, type EmbeddingsData } from "./backend";
+	import { Backend, type ProteinData, type TaxonomyInfo } from "./backend";
 	import { onMount } from "svelte";
 	import { Button, Textarea } from "flowbite-svelte";
 	import {
 		ArrowUpRightFromSquareOutline,
 		ArrowUpRightFromSquareSolid,
 	} from "flowbite-svelte-icons";
+	import Select from "svelte-select";
 
-	let sequence = `MNKYSAFIVCISLVLLFTKKDVGSHNVDSRIYGFQQSSGICHIYNGTICRDVLSNAHVFVSPNLTMNDLEERLKAAYGVIKESKDMNANCRMYALPSLCFSSMPICRTPERTNLLYFANVATNAKQLKNVSIRRKRTKSKDIKNISIFKKKSTIYEDVFSTDISSKYPPTRESENLKRICREECELLENELCQKEYAIAKRHPVIGMVGVEDCQKLPQHKDCLSLGITIEVDKTENCYWEDGSTYRGVANVSASGKPCLRWSWLMKEISDFPELIGQNYCRNPGSVENSPWCFVDSSRERIIELCDIPKCADKIWIAIVGTTAAIILIFIIIFAIILFKRRTIMHYGMRNIHNINTPSADKNIYGNSQLNNAQDAGRGNLGNLSDHVALNSKLIERNTLLRINHFTLQDVEFLEELGEGAFGKVYKGQLLQPNKTTITVAIKALKENASVKTQQDFKREIELISDLKHQNIVCILGVVLNKEPYCMLFEYMANGDLHEFLISNSPTEGKSLSQLEFLQIALQISEGMQYLSAHHYVHRDLAARNCLVNEGLVVKISDFGLSRDIYSSDYYRVQSKSLLPVRWMPSESILYGKFTTESDVWSFGVVLWEIYSYGMQPYYGFSNQEVINLIRSRQLLSAPENCPTAVYSLMIECWHEQSVKRPTFTDISNRLKTWHEGHFKASNPEM`;
+	let sequence = `MMITFQCLIGILLIANNLAFDICKASNPRFCKCQSHSKMQCGSFEVTTNTINNLIIKCSMKSDVNEISKIFLNVIEGENIDTAEVILENCLIVHDFNWYLPIFIVSGRELPFWLTISKRYEVYLYYLRAIETLESLTLSMINTLVIGSKAFDINPYLKTLRIKNNNFVKLDAKNPFWGLHNLEILEISKNKKVVFGREPFFLLPKLKILYLDNNNLESIPDKLFFGLDSLTDLVLSGNRIKSLTDESFFGLIMSLKRIDLKGNRLQKTEIDKIHKYFGDEFILIDY`;
 	let topK = 100;
-	let results: EmbeddingsData;
+	let results: ProteinData;
 	let topKIdxs: number[];
 
-	onMount(async () => {
+	type SelectItem = { value: string; label: string; taxonomy: string };
+	let items: SelectItem[] = [];
+	let selectedFilters: SelectItem[] | undefined;
+
+	$: isSequenceValid = validSequence(sequence);
+
+	async function updateSearch(
+		sequence: string,
+		topK: number,
+		selectedFilters: SelectItem[] | undefined
+	) {
+		let classFilters, phylumFilters;
+		if (selectedFilters) {
+			classFilters = selectedFilters
+				.filter((d) => d.taxonomy === "class")
+				.map((d) => d.value);
+			phylumFilters = selectedFilters
+				.filter((d) => d.taxonomy === "phylum")
+				.map((d) => d.value);
+
+			// don't filter if there are no filters, duh!
+			if (classFilters.length === 0) classFilters = undefined;
+			if (phylumFilters.length === 0) phylumFilters = undefined;
+		}
+
+		console.log(classFilters, phylumFilters);
 		results = await Backend.computeSimilarity({
 			sequence: sequence.toUpperCase(),
 			topK,
+			classFilters,
+			phylumFilters,
 		});
 		topKIdxs = sortedIdxs(results);
+	}
+
+	onMount(async () => {
+		await updateSearch(sequence, topK, selectedFilters);
+
+		const taxonomyInfo = await Backend.taxonomyInfo();
+		items = parseTax(taxonomyInfo);
 	});
 
 	function validSequence(s: string) {
@@ -30,12 +65,27 @@
 		return Array.from(l).every((d) => validAA.has(d));
 	}
 
-	function sortedIdxs(results: EmbeddingsData) {
+	function sortedIdxs(results: ProteinData) {
 		const s = results.similarity.map((d, i) => [d, i]);
 		const sorted = s.sort((a, b) => b[0] - a[0]);
 		return sorted.map((d) => d[1]);
 	}
-	$: isSequenceValid = validSequence(sequence);
+
+	function parseTax(t: TaxonomyInfo) {
+		const label = (categeory: string, item: string) =>
+			`${item} [${categeory}]`;
+		const classesItems = t.classes.map((d) => ({
+			value: d,
+			label: label("class", d),
+			taxonomy: "class",
+		}));
+		const phylumItems = t.phyla.map((d) => ({
+			value: d,
+			label: label("phylum", d),
+			taxonomy: "phylum",
+		}));
+		return classesItems.concat(phylumItems);
+	}
 </script>
 
 <Header />
@@ -46,16 +96,25 @@
 			<b>Protein Sequence</b> (input/query)
 		</div>
 		<Textarea bind:value={sequence} rows={4} />
+		<div class="mt-2 mb-4">
+			<div class="mb-2">
+				<b>Filter</b>
+			</div>
+			<div style="">
+				<Select
+					{items}
+					placeholder="Filter by Class or Phylum"
+					multiple
+					bind:value={selectedFilters}
+				/>
+			</div>
+		</div>
 		<Button
 			color="dark"
 			disabled={!isSequenceValid}
 			on:click={async () => {
 				topK = 100;
-				results = await Backend.computeSimilarity({
-					sequence: sequence.toUpperCase(),
-					topK,
-				});
-				topKIdxs = sortedIdxs(results);
+				await updateSearch(sequence, topK, selectedFilters);
 			}}
 		>
 			{#if isSequenceValid}
@@ -110,17 +169,15 @@
 			{/each}
 		</div>
 		<div class="flex justify-center m-5">
-			<Button
-				color="alternative"
-				on:click={async () => {
-					topK += 100;
-					results = await Backend.computeSimilarity({
-						sequence: sequence.toUpperCase(),
-						topK,
-					});
-					topKIdxs = sortedIdxs(results);
-				}}>Click to see more</Button
-			>
+			{#if results && results.sequenceLength.length % 100 === 0}
+				<Button
+					color="alternative"
+					on:click={async () => {
+						topK += 100;
+						await updateSearch(sequence, topK, selectedFilters);
+					}}>Click to see more</Button
+				>
+			{/if}
 		</div>
 	{/if}
 </main>
