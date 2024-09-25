@@ -23,7 +23,7 @@ def load_models():
 app = init_fastapi_app()
 disable_cors(app, ["*"])
 
-df = load_569k("15k-protein-embeddings.parquet")
+df = load_569k("569k-protein-embeddings.parquet")
 idx = np.vstack(df["embedding"].to_numpy())
 esm2, alphabet, pclip = load_models()
 
