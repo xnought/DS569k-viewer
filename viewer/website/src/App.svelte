@@ -12,7 +12,7 @@
 	let sequence = `MNKYSAFIVCISLVLLFTKKDVGSHNVDSRIYGFQQSSGICHIYNGTICRDVLSNAHVFVSPNLTMNDLEERLKAAYGVIKESKDMNANCRMYALPSLCFSSMPICRTPERTNLLYFANVATNAKQLKNVSIRRKRTKSKDIKNISIFKKKSTIYEDVFSTDISSKYPPTRESENLKRICREECELLENELCQKEYAIAKRHPVIGMVGVEDCQKLPQHKDCLSLGITIEVDKTENCYWEDGSTYRGVANVSASGKPCLRWSWLMKEISDFPELIGQNYCRNPGSVENSPWCFVDSSRERIIELCDIPKCADKIWIAIVGTTAAIILIFIIIFAIILFKRRTIMHYGMRNIHNINTPSADKNIYGNSQLNNAQDAGRGNLGNLSDHVALNSKLIERNTLLRINHFTLQDVEFLEELGEGAFGKVYKGQLLQPNKTTITVAIKALKENASVKTQQDFKREIELISDLKHQNIVCILGVVLNKEPYCMLFEYMANGDLHEFLISNSPTEGKSLSQLEFLQIALQISEGMQYLSAHHYVHRDLAARNCLVNEGLVVKISDFGLSRDIYSSDYYRVQSKSLLPVRWMPSESILYGKFTTESDVWSFGVVLWEIYSYGMQPYYGFSNQEVINLIRSRQLLSAPENCPTAVYSLMIECWHEQSVKRPTFTDISNRLKTWHEGHFKASNPEM`;
 	let topK = 100;
 	let results: EmbeddingsData;
-	let topKIdxs;
+	let topKIdxs: number[];
 
 	onMount(async () => {
 		results = await Backend.computeSimilarity({
@@ -73,6 +73,8 @@
 				{@const proteinName = results.proteinName[i]}
 				{@const organismName = results.organismName[i]}
 				{@const sequenceLength = results.sequenceLength[i]}
+				{@const taxonomyClass = results.ncbiTaxonomyClass[i]}
+				{@const taxonomyPhylum = results.ncbiTaxonomyPhylum[i]}
 				<div class="protein">
 					<div>
 						<div class="title">
@@ -91,6 +93,8 @@
 						</div>
 						<div style="color: grey">
 							<div><b>Organism:</b> {organismName}</div>
+							<div><b>Class:</b> {taxonomyClass ?? "-"}</div>
+							<div><b>Phylum:</b> {taxonomyPhylum ?? "-"}</div>
 							<div>
 								<b>Sequence Length:</b>
 								{sequenceLength}

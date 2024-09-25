@@ -7,6 +7,8 @@ export type EmbeddingsData = {
     proteinName: Array<string>;
     organismName: Array<string>;
     sequenceLength: Array<number>;
+    ncbiTaxonomyClass: Array<(string | null)>;
+    ncbiTaxonomyPhylum: Array<(string | null)>;
     similarity: Array<number>;
 };
 

@@ -6,11 +6,9 @@ import os
 from protein_clip import load_proteinclip, get_model, embed_sequence
 
 
-def load_569k():
+def load_569k(src):
     print("Loading Embeddings Dataset")
-    df = pd.read_parquet(
-        os.path.join("..", "..", "data", "swissprot-embeddings-large.parquet")
-    )
+    df = pd.read_parquet(os.path.join("..", "..", "data", src))
     print("Loaded Embeddings Dataset")
     return df
 
@@ -24,8 +22,8 @@ def load_models():
 app = init_fastapi_app()
 disable_cors(app, ["*"])
 
-df = load_569k()
-idx = np.array(df["proteinclip_embed_esm2_6"].tolist())
+df = load_569k("15k-protein-embeddings.parquet")
+idx = np.vstack(df["embedding"].to_numpy())
 esm2, alphabet, pclip = load_models()
 
 
@@ -46,6 +44,8 @@ class EmbeddingsData(CamelModel):
     protein_name: list[str]
     organism_name: list[str]
     sequence_length: list[int]
+    ncbi_taxonomy_class: list[str | None]
+    ncbi_taxonomy_phylum: list[str | None]
     similarity: list[float]
 
 
@@ -65,6 +65,8 @@ def compute_similarity(body: ProteinCLIPQuery):
         protein_name=top_k_df["protein_name"],
         organism_name=top_k_df["organism_name"],
         sequence_length=top_k_df["sequence_length"],
+        ncbi_taxonomy_class=top_k_df["ncbi_taxonomy_class"],
+        ncbi_taxonomy_phylum=top_k_df["ncbi_taxonomy_phylum"],
         similarity=cosine_sim[top_k].reshape(-1).tolist(),
     )
 
