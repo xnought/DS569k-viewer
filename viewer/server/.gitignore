@@ -3,3 +3,4 @@ __pycache__/
 pdb*
 temp/
 .temp/
+DS569k.parquet

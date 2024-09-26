@@ -3,36 +3,37 @@ import pandas as pd
 import numpy as np
 from utils import init_fastapi_app, disable_cors, CamelModel
 import os
-from protein_clip import load_proteinclip, get_model, embed_sequence
+from embed_proteinclip import embed_proteinclip_6
+import wget
+from functools import lru_cache
 
 
-def load_569k(src):
+@lru_cache(maxsize=1)
+def load_569k(src="DS569k.parquet", devMode=False):
     print("Loading Embeddings Dataset")
-    df = pd.read_parquet(os.path.join("..", "..", "data", src))
+    if devMode:
+        df = pd.read_parquet(
+            os.path.join("..", "..", "data", "15k-protein-embeddings.parquet")
+        )  # dev debugging on smaller df
+    else:
+        if not os.path.exists(src):
+            print("Fetching from HF")
+            wget.download(
+                "https://huggingface.co/datasets/donnyb/DS569k/resolve/main/DS569k.parquet",
+                "DS569k.parquet",
+            )
+        df = pd.read_parquet(src)
+
     df["i"] = range(len(df))
     print("Loaded Embeddings Dataset")
+
     return df
-
-
-def load_models():
-    esm2, alphabet = get_model(6)
-    pclip = load_proteinclip(6)
-    return esm2, alphabet, pclip
 
 
 app = init_fastapi_app()
 disable_cors(app, ["*"])
-
-df = load_569k("569k-protein-embeddings.parquet")
+df = load_569k(devMode=False)
 idx = np.vstack(df["embedding"].to_numpy())
-esm2, alphabet, pclip = load_models()
-
-
-def embed_pclip(seq, esm2, alphabet, pclip):
-    esm_repr = embed_sequence(seq, esm2, alphabet, 6)
-    esm_repr /= np.linalg.norm(esm_repr)
-    pclip_repr = pclip.predict(esm_repr)
-    return pclip_repr
 
 
 class SimilarityQuery(CamelModel):
@@ -74,8 +75,8 @@ def compute_similarity(body: SimilarityQuery):
     fidx = idx[fdf["i"].tolist(), :]  # filter down the idx too
 
     # compute cosine similarity with sequence vs all swiss-prot
-    pclip_repr = embed_pclip(body.sequence, esm2, alphabet, pclip).reshape(-1, 1)
-    cosine_sim = fidx @ pclip_repr  # since both are normed
+    pclip_repr = embed_proteinclip_6(body.sequence).reshape(-1, 1)
+    cosine_sim = fidx @ pclip_repr
 
     top_k = range(len(fidx))
     if len(fidx) > body.top_k:

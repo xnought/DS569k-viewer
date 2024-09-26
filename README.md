@@ -1,6 +1,30 @@
 # DS569k-viewer
 
-Similar protein search interface for the [DS569k](https://huggingface.co/datasets/donnyb/569k-protein-embeddings) dataset.
+**Similar protein search interface for the [DS569k](https://huggingface.co/datasets/donnyb/569k-protein-embeddings) dataset.**
+
+First install https://github.com/astral-sh/uv then run
+
+```bash
+cd viewer
+cd server
+uv venv
+uv sync
+uv run src/server.py
+```
+
+to install backend packages.
+
+Then in another terminal, use https://pnpm.io/ to install and run the frontend
+
+```bash
+cd ..
+cd website
+pnpm install
+pnpm dev
+```
+
+Then open http://localhost:5173.
+
 
 ## Credit
 

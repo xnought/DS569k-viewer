@@ -7,10 +7,7 @@ import esm
 import torch.nn as nn
 import torch
 import numpy as np
-from Bio import SeqIO
-from Bio.SeqUtils import seq1
-from Bio.PDB import PDBParser
-import os
+from functools import lru_cache
 
 from pathlib import Path
 
@@ -24,21 +21,12 @@ ESM_CALLABLES = {
 }
 
 
+@lru_cache(maxsize=2)
 def get_model(model_size: int) -> tuple[nn.Module, esm.Alphabet]:
     """Return model and alphabet for a given model size."""
     model, alphabet = ESM_CALLABLES[model_size]()
     model.eval()
     return model, alphabet
-
-
-def read_fasta(filename):
-    fa = SeqIO.parse(filename, "fasta")
-    sequences = []
-    ids = []
-    for i in fa:
-        ids.append(i.id)
-        sequences.append(str(i.seq))
-    return list(zip(ids, sequences))
 
 
 def batch_embed_sequence(batch, model, alphabet, embed_layer=5, device="cpu"):
@@ -78,31 +66,6 @@ def embed_sequence(sequence, model, alphabet, embed_layer=5, device="cpu"):
     return rep
 
 
-def amino_acids(structure, one_letter_code=True):
-    return "".join(
-        [
-            seq1(residue.resname) if one_letter_code else residue.resname
-            for residue in structure.get_residues()
-        ]
-    )
-
-
-def read_fasta_from_pdbs(path):
-    if not os.path.exists(path):
-        raise Exception(path + " does not exist")
-
-    files = os.listdir(path)
-    sequences = []
-    ids = []
-    for f in files:
-        parser = PDBParser()
-        structure = parser.get_structure(id=None, file=os.path.join(path, f))
-        ids.append(f)
-        sequences.append(amino_acids(structure))
-
-    return list(zip(ids, sequences))
-
-
 MODEL_DIR = Path(__file__).parent.parent.parent.parent / "pretrained"
 
 
@@ -132,11 +95,20 @@ class ONNXModel:
         return self.model.run(None, {"input": x})[0]
 
 
-def load_proteinclip(model_size: int | None = None) -> ONNXModel:
-    """Load the ProteinCLIP model for the given protein language model."""
-    assert MODEL_DIR.is_dir()
-    assert model_size is not None, "ESM model requires a size."
-    assert model_size in [6, 12, 30, 33, 36], f"Invalid ESM model size: {model_size}"
-
-    model_path = MODEL_DIR / f"proteinclip_esm2_{model_size}.onnx"
+@lru_cache(maxsize=2)
+def load_proteinclip(model_path="proteinclip_esm2_6.onnx") -> ONNXModel:
     return ONNXModel(model_path)
+
+
+def embed_proteinclip(seq, esm2, alphabet, pclip, layer=6, device="cpu"):
+    esm_repr = embed_sequence(seq, esm2, alphabet, layer, device)
+    esm_repr /= np.linalg.norm(esm_repr)
+    pclip_repr = pclip.predict(esm_repr)
+    return pclip_repr
+
+
+def embed_proteinclip_6(seq, device="cpu"):
+    size = 6
+    esm2, alphabet = get_model(size)
+    pclip = load_proteinclip(f"src/proteinclip_esm2_{size}.onnx")
+    return embed_proteinclip(seq, esm2, alphabet, pclip, size, device)
