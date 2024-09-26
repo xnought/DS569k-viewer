@@ -9,13 +9,13 @@
 	<div id="inner">
 		<div class="left">
 			<span id="title-desc" style="color:#D1E600;"
-				>569k Protein Embeddings Search</span
+				><b>DS569k</b> Viewer</span
 			>
 		</div>
 		<div class="right">
 			<Button
 				size="xs"
-				href="https://huggingface.co/datasets/donnyb/569k-protein-embeddings"
+				href="https://huggingface.co/datasets/donnyb/DS569k"
 				target="_blank"
 				{color}
 				outline

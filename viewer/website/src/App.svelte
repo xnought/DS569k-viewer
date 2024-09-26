@@ -183,11 +183,8 @@
 </main>
 
 <style>
-	a {
-		color: slateblue;
-	}
 	.protein {
-		outline: 1px solid grey;
+		outline: 1px solid rgba(255, 255, 255, 0.1);
 		border-radius: 3px;
 		width: 300px;
 		padding: 15px;
