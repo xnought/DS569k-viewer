@@ -66,9 +66,6 @@ def embed_sequence(sequence, model, alphabet, embed_layer=5, device="cpu"):
     return rep
 
 
-MODEL_DIR = Path(__file__).parent.parent.parent.parent / "pretrained"
-
-
 class ONNXModel:
     """Wrapper for an ONNX model to provide a more familiar interface."""
 
