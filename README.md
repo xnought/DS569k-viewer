@@ -25,6 +25,11 @@ pnpm dev
 
 Then open http://localhost:5173.
 
+## Want to embed your own proteins compared to the dataset?
+
+Take a look at how we embed sequences into ProteinCLIP: https://github.com/xnought/DS569k-viewer/blob/main/viewer/server/src/embed_proteinclip.py#L107
+
+Most of the code in that file is copied from https://github.com/wukevin/proteinclip. Credit to them!
 
 ## Credit
 
