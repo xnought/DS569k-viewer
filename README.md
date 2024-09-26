@@ -1,6 +1,10 @@
 # DS569k-viewer
 
-**Similar protein search interface for the [DS569k](https://huggingface.co/datasets/donnyb/569k-protein-embeddings) dataset.**
+**Similar protein search interface showing usecase of [DS569k](https://huggingface.co/datasets/donnyb/569k-protein-embeddings) dataset.**
+
+https://github.com/user-attachments/assets/5868891a-050e-45fb-be95-d06e2f96d221
+
+
 
 First install https://github.com/astral-sh/uv then run
 
