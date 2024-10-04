@@ -9,7 +9,6 @@ dependencies = [
     "uvicorn>=0.30.6",
     "pandas>=2.2.3",
     "fastparquet>=2024.5.0",
-    "biopython>=1.84",
     "fair-esm>=2.0.0",
     "onnxruntime>=1.19.2",
     "numpy<2",

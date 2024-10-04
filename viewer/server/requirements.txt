@@ -1,0 +1,9 @@
+fair-esm>=2.0.0
+fastapi>=0.115.0
+fastparquet>=2024.5.0
+numpy<2
+onnxruntime>=1.19.2
+pandas>=2.2.3
+torch==2.2.1
+uvicorn>=0.30.6
+wget>=3.2
