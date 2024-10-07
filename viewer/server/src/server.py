@@ -34,6 +34,8 @@ app = init_fastapi_app()
 disable_cors(app, ["*"])
 df = load_569k(devMode=False)
 idx = np.vstack(df["embedding"].to_numpy())
+classes = df["ncbi_taxonomy_class"].dropna().unique().tolist()
+phyla = df["ncbi_taxonomy_phylum"].dropna().unique().tolist()
 
 
 class SimilarityQuery(CamelModel):
@@ -104,9 +106,7 @@ class TaxonomyInfo(CamelModel):
 
 @app.get("/taxonomy-info", response_model=TaxonomyInfo)
 def taxonomy_info():
-    global df
-    classes = df["ncbi_taxonomy_class"].dropna().unique().tolist()
-    phyla = df["ncbi_taxonomy_phylum"].dropna().unique().tolist()
+    global classes, phyla
     return TaxonomyInfo(phyla=phyla, classes=classes)
 
 
