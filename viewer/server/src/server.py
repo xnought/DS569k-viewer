@@ -51,6 +51,7 @@ class ProteinData(CamelModel):
     ncbi_taxonomy_class: list[str | None]
     ncbi_taxonomy_phylum: list[str | None]
     similarity: list[float]
+    function: list[str | None]
 
 
 def filter_df(df, class_filters, phylum_filters):
@@ -92,6 +93,7 @@ def compute_similarity(body: SimilarityQuery):
         ncbi_taxonomy_class=top_k_df["ncbi_taxonomy_class"],
         ncbi_taxonomy_phylum=top_k_df["ncbi_taxonomy_phylum"],
         similarity=cosine_sim[top_k].reshape(-1).tolist(),
+        function=top_k_df["function"],
     )
 
 
@@ -109,4 +111,4 @@ def taxonomy_info():
 
 
 if __name__ == "__main__":
-    uvicorn.run("server:app", host="localhost", port=8000)
+    uvicorn.run("server:app", host="localhost", port=4322)

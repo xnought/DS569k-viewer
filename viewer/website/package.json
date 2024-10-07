@@ -8,8 +8,7 @@
 		"build": "vite build",
 		"preview": "vite preview",
 		"check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json",
-		"openapi": "pnpx openapi-typescript-codegen --input http://127.0.0.1:8000/openapi.json --output ./src/openapi --client fetch",
-		"test": "curl 127.0.0.1:8000/openapi.json"
+		"openapi": "pnpx openapi-typescript-codegen --input http://127.0.0.1:4322/openapi.json --output ./src/openapi --client fetch"
 	},
 	"devDependencies": {
 		"@sveltejs/vite-plugin-svelte": "^3.1.1",

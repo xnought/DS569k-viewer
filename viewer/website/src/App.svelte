@@ -134,6 +134,7 @@
 				{@const sequenceLength = results.sequenceLength[i]}
 				{@const taxonomyClass = results.ncbiTaxonomyClass[i]}
 				{@const taxonomyPhylum = results.ncbiTaxonomyPhylum[i]}
+				{@const _function = results.function[i]}
 				<div class="protein">
 					<div>
 						<div class="title">
@@ -161,6 +162,12 @@
 							<div>
 								<b>Cosine Similarity:</b>
 								{similarity.toFixed(2)}
+							</div>
+							<div
+								style="max-height: 100px; overflow-y: scroll; "
+							>
+								<b>Function:</b>
+								{_function}
 							</div>
 						</div>
 						<div></div>
