@@ -2,7 +2,7 @@
 # https://github.com/wukevin/proteinclip/blob/main/proteinclip/esm_wrapper.py
 # https://github.com/wukevin/proteinclip/blob/main/proteinclip/model_utils.py
 # https://github.com/wukevin/proteinclip/blob/main/proteinclip/gpt.py
-
+from __future__ import annotations
 import esm
 import torch.nn as nn
 import torch

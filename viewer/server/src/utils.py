@@ -1,4 +1,5 @@
 # https://github.com/Venom-Biochem-Lab/venome/blob/main/backend/src/setup.py
+from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.routing import APIRouter
 from fastapi.middleware.cors import CORSMiddleware

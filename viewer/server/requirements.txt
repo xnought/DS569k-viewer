@@ -1,3 +1,4 @@
+eval-type-backport>=0.2.0
 fair-esm>=2.0.0
 fastapi>=0.115.0
 fastparquet>=2024.5.0
