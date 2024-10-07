@@ -1,0 +1,9 @@
+fair-esm
+fastapi
+fastparquet
+numpy
+onnxruntime
+pandas
+torch
+uvicorn
+wget
