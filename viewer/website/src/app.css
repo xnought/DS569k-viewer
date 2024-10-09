@@ -24,6 +24,7 @@
 	--border: 1px solid #4b5563;
 	--border-hover: 1px solid #d1e602;
 	--border-focused: var(--border-hover);
+	color-scheme: dark;
 }
 
 body {

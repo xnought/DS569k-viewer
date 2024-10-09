@@ -35,6 +35,30 @@ Take a look at how we embed sequences into ProteinCLIP: https://github.com/xnoug
 
 Most of the code in that file is copied from https://github.com/wukevin/proteinclip. Credit to them!
 
+## Ocular Deployment
+
+You need to run the backend server and transfer the static files over.
+
+**Backend**:
+
+```bash
+cd viewer/server
+
+# install dependencies 
+virtualenv --python=python3 venv  
+source venv/bin/activate
+pip3 install -r requirements.noversion.txt
+
+# run the server in the backround (port 4322)
+nohup python3 src/server.py runserver > logfile.out &
+```
+
+**Frontend**
+
+```bash
+cp -R viewer/website/dist /var/www/html/DS569k/
+```
+
 ## Credit
 
 All credit for the data goes to https://www.uniprot.org/ and https://www.expasy.org/resources/uniprotkb-swiss-prot and to the original authors of each protein. I directly took the data from them.
