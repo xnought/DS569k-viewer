@@ -1,6 +1,6 @@
 # DS569k-viewer
 
-**Similar protein search interface showing usecase of [DS569k](https://huggingface.co/datasets/donnyb/569k-protein-embeddings) dataset.**
+**Similar protein search interface showing usecase of [DS569k](https://huggingface.co/datasets/donnyb/569k-protein-embeddings) dataset deployed live at https://ocular.cc.gatech.edu/DS569k/.**
 
 https://github.com/user-attachments/assets/5868891a-050e-45fb-be95-d06e2f96d221
 
